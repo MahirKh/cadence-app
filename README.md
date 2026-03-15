@@ -1,50 +1,91 @@
-# Welcome to your Expo app 👋
+# Cadence
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A personal coaching app for goal tracking, daily scheduling, structured reviews, and AI-powered pattern analysis. Single user, mobile-first.
 
-## Get started
+## Tech Stack
 
-1. Install dependencies
+- **React Native** (Expo managed workflow) + **Expo Router** (file-based routing)
+- **Supabase** — Auth, PostgreSQL, Edge Functions, Push Notifications
+- **Claude API** (`claude-sonnet-4-20250514`) via Supabase Edge Functions
+- **NativeWind** — Tailwind CSS for React Native
+- **Zustand** — State management
+- **React Hook Form** — Form handling
 
-   ```bash
-   npm install
-   ```
+## Getting Started
 
-2. Start the app
+### Prerequisites
 
-   ```bash
-   npx expo start
-   ```
+- Node.js 20+
+- [Expo CLI](https://docs.expo.dev/get-started/installation/)
+- [Supabase CLI](https://supabase.com/docs/guides/cli)
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### Install dependencies
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Start local Supabase
 
-## Learn more
+```bash
+supabase start
+supabase db reset   # applies migrations and seed data
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### Start the dev server
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npx expo start
+```
 
-## Join the community
+Open in an [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/), [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/), or [Expo Go](https://expo.dev/go).
 
-Join our community of developers creating universal apps.
+## Commands
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+| Command                      | Description                            |
+| ---------------------------- | -------------------------------------- |
+| `npx expo start`             | Start dev server                       |
+| `npx expo start --clear`     | Start with cache cleared               |
+| `npx expo run:ios`           | Run on iOS simulator                   |
+| `npx expo run:android`       | Run on Android emulator                |
+| `npx expo lint`              | Lint check                             |
+| `supabase start`             | Start local Supabase                   |
+| `supabase db reset`          | Reset local DB and re-run migrations   |
+| `supabase functions serve`   | Run Edge Functions locally             |
+| `supabase db diff -f <name>` | Generate migration from schema changes |
+
+## Project Structure
+
+```
+cadence/
+├── app/                    # Expo Router screens
+│   ├── (tabs)/             # Bottom tab screens
+│   │   ├── index.tsx       # Dashboard (home)
+│   │   ├── goals.tsx       # Goals browser
+│   │   ├── plan.tsx        # Daily plan
+│   │   ├── review.tsx      # Review entry point
+│   │   └── insights.tsx    # AI insights feed
+│   ├── goal/[id].tsx       # Goal detail
+│   └── review/[type].tsx   # Review flow
+├── components/
+│   ├── ui/                 # Generic (Button, Card, Input)
+│   └── domain/             # Domain-specific (GoalCard, etc.)
+├── lib/
+│   ├── supabase.ts         # Supabase client
+│   ├── types.ts            # TypeScript types
+│   └── constants.ts        # Categories, review prompts, config
+├── stores/                 # Zustand stores (goals, actions, reviews)
+├── hooks/                  # Custom React hooks
+├── utils/                  # Pure helper functions
+└── supabase/
+    ├── migrations/         # SQL migrations
+    ├── functions/          # Edge Functions (Claude API integration)
+    └── seed.sql            # Dev seed data
+```
+
+## Core App Loop
+
+1. **Morning** — Dashboard shows today's actions pulled from recurring rules and scheduled items
+2. **During day** — Check off actions, add notes; swipe right to complete, swipe left to skip
+3. **Night** — Nightly review: day summary → guided prompts → optional journal → AI analysis
+4. **Weekly/Monthly/Quarterly/Yearly** — Progressive reviews at appropriate intervals
