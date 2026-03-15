@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx supabase init:*)",
+      "Bash(npx expo lint)",
+      "Bash(npx tsc:*)",
+      "Bash(npx expo start:*)",
+      "Bash(node:*)",
+      "Bash(nvm install:*)",
+      "Bash(nvm use:*)",
+      "Bash(\"C:\\\\Users\\\\mkhan\\\\AppData\\\\Roaming\\\\nvm\\\\v20.0.0\\\\node.exe\" --version)"
+    ]
+  }
+}

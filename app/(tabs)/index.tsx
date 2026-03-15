@@ -1,98 +1,92 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { useEffect } from 'react';
+import { View, Text, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
+import { useGoalStore } from '@/stores/goalStore';
+import { GoalCard } from '@/components/domain/GoalCard';
+import { Card } from '@/components/ui/Card';
+import { GOAL_CATEGORIES } from '@/lib/constants';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const router = useRouter();
+  const { goals, fetchGoals, loading } = useGoalStore();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  useEffect(() => {
+    fetchGoals();
+  }, [fetchGoals]);
+
+  const activeGoals = goals.filter((g) => g.status === 'active');
+  const recentGoals = activeGoals.slice(0, 3);
+
+  const goalsByCategory = GOAL_CATEGORIES.map((cat) => ({
+    ...cat,
+    count: goals.filter((g) => g.category === cat.id && g.status === 'active').length,
+  }));
+
+  return (
+    <SafeAreaView className="flex-1 bg-gray-50 dark:bg-gray-900" edges={['top']}>
+      <ScrollView className="flex-1 px-4 py-4">
+        <Text className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+          Cadence
+        </Text>
+        <Text className="text-gray-600 dark:text-gray-400 mb-6">
+          Your personal coaching companion
+        </Text>
+
+        <Card className="mb-6">
+          <Text className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+            Overview
+          </Text>
+          <View className="flex-row flex-wrap">
+            {goalsByCategory.map((cat) => (
+              <View key={cat.id} className="w-1/2 mb-3">
+                <Text className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {cat.count}
+                </Text>
+                <Text className="text-sm text-gray-600 dark:text-gray-400">
+                  {cat.label}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </Card>
+
+        {loading && goals.length === 0 ? (
+          <View className="py-10 items-center">
+            <Text className="text-gray-500 dark:text-gray-400">Loading...</Text>
+          </View>
+        ) : recentGoals.length > 0 ? (
+          <>
+            <View className="flex-row justify-between items-center mb-3">
+              <Text className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Active Goals
+              </Text>
+              <Text
+                className="text-blue-600 dark:text-blue-400"
+                onPress={() => router.push('/(tabs)/goals')}
+              >
+                See all
+              </Text>
+            </View>
+            {recentGoals.map((goal) => (
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                onPress={() => router.push(`/goal/${goal.id}`)}
+              />
+            ))}
+          </>
+        ) : (
+          <Card>
+            <Text className="text-center text-gray-600 dark:text-gray-400 py-4">
+              No active goals yet.{'\n'}
+              Head to the Goals tab to create your first goal!
+            </Text>
+          </Card>
+        )}
+
+        <View className="h-6" />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});
